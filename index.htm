@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+   <head>
+    <meta charset="utf-8">
+    <title>
+      TODO APP
+    </title>
+      <link href = "https://cdnjs.cloudflare.com/ajax/libs/extjs/6.0.0/classic/theme-classic/resources/theme-classic-all.css" 
+         rel = "stylesheet" />
+      <script type = "text/javascript" src = "js/ext-all.js"></script>
+      
+      <style type="text/css">
+         #todoapp {
+            padding: 1em;
+            background-color: #FEF0DB;
+            height: 100%;
+         }
+         #todoheader {
+            width: 100%;
+            background-color: #808080;
+            padding: 0.5em;
+         }
+         #inputbar {
+            padding: 0.3em;
+            width: 85%;
+            height: 3em;
+         }
+         #actionbutton {
+            height: 3em;
+            width: 15%;
+            background-color: #F4A460;
+            border: none;
+         }
+         #todobody p {
+            padding: 0.5em 10% 0.5em 5%;
+         }
+         #todobody p:hover {
+            font-weight: bold;
+         }
+         #todobody p:nth-child(even) {
+            background-color: #f2f2f2;
+         }
+         #todobody p button {
+            float: right;
+            color: red;
+            background-color: white;
+            border: 0.1em solid red;
+            padding: 0.1em 0.5em;
+            border-radius: 50%;
+         }
+         #todobody p button:hover {
+            color: white;
+            background-color: red;
+         }
+
+      </style>
+
+      <script type = "text/javascript">
+         Ext.onReady(function() {
+            var panel = Ext.create('Ext.Panel', {
+               renderTo: 'todo',
+               height: 600,
+               width: 600,
+               title: 'TODO APP',
+               html: [
+                  '<div id="todoapp">',
+                     '<div id="todoheader">',
+                        '<input type="text" id="inputbar" placeholder="What do you want to do?" />',
+                        '<button id="actionbutton">Add</button>',
+                     '</div>',
+                     '<div id="todobody">',
+                        
+                     '</div>',
+               ],
+               listeners: {
+                  addTodo: function(e) {
+                     var q = Ext.get('inputbar').getValue();
+                     if(q == "")
+                     {
+                        Ext.MessageBox.alert('Invalid task', 'Specify a task name');
+                        return;
+                     }
+                     var html = '<p><input type="checkbox" class="marktodo" /> <span>'+q+'</span> <button class="removeTodo">x</button></p>';
+                     Ext.get('todobody').insertHtml("beforeEnd",html);
+                     document.getElementById('inputbar').value = "";
+                  },
+                  removeTodo: function(e) {
+                     Ext.MessageBox.alert('Alert box', 'Todo removed');
+                  }
+               }
+            });
+            Ext.get('actionbutton').on('click', function(e){
+               
+               panel.fireEvent('addTodo');
+
+            });
+                        
+
+            
+         });
+      </script>
+      
+   </head>
+   
+   <body>
+      <div id = "todo" />
+   </body>
+</html>
