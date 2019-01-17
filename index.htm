@@ -33,9 +33,13 @@
          }
          #todobody p {
             padding: 0.5em 10% 0.5em 5%;
+            border-bottom: 0.1em solid #FEF0DB;
          }
          #todobody p:hover {
-            font-weight: bold;
+            border-bottom: 0.1em solid black;
+         }
+         #todobody p span {
+            margin: 0.5em 0;
          }
          #todobody p:nth-child(even) {
             background-color: #f2f2f2;
@@ -56,11 +60,21 @@
       </style>
 
       <script type = "text/javascript">
+         function makeTodoId(){
+            var text = "";
+            var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            for (var i = 0; i < 5; i++)
+            {
+               text += possible.charAt(Math.floor(Math.random() * possible.length));
+            }
+            return text;
+
+         }
          Ext.onReady(function() {
+            
             var panel = Ext.create('Ext.Panel', {
                renderTo: 'todo',
                height: 600,
-               width: 600,
                title: 'TODO APP',
                html: [
                   '<div id="todoapp">',
@@ -68,9 +82,10 @@
                         '<input type="text" id="inputbar" placeholder="What do you want to do?" />',
                         '<button id="actionbutton">Add</button>',
                      '</div>',
-                     '<div id="todobody">',
+                     '<div id="todobody" class="mytodobody">',
                         
                      '</div>',
+                  '</div>'
                ],
                listeners: {
                   addTodo: function(e) {
@@ -80,13 +95,78 @@
                         Ext.MessageBox.alert('Invalid task', 'Specify a task name');
                         return;
                      }
-                     var html = '<p><input type="checkbox" class="marktodo" /> <span>'+q+'</span> <button class="removeTodo">x</button></p>';
+                     var shown = Ext.dom.Query.select('.removeTodo');
+                     shown = shown.length;
+
+                     var tid = makeTodoId();
+
+                     var html = '<p class="showntodo"><input type="checkbox" class="marktodo" /> <span>'+q+'</span> <button class="removeTodo" tid="'+tid+'">x</button></p>';
                      Ext.get('todobody').insertHtml("beforeEnd",html);
+                     
                      document.getElementById('inputbar').value = "";
+
+                     var dom = Ext.dom.Query.select('.removeTodo');
+                     for(var i=shown; i<dom.length; i++)
+                     {
+                        var el = Ext.get(dom[i]); 
+                        el.on('click', function(){
+                           var tid = el.dom.attributes.tid.nodeValue;
+                           panel.fireEvent('removeTodo',tid);
+                        });
+                     }
+                     
+                     
                   },
                   removeTodo: function(e) {
+                     var data = new Array();
+                     var dom = Ext.dom.Query.select('.showntodo');
+                     for(var i=0; i<dom.length; i++)
+                     {
+                        var el = Ext.get(dom[i]);
+
+                        var t = {
+                           state: false, 
+                           val: el.dom.childNodes[2].firstChild.nodeValue,
+                           tid: el.dom.childNodes[4].firstChild.parentNode.attributes[1].nodeValue
+                        };
+
+                        if(t.tid == e)
+                           continue;
+
+                        data.push(t);
+
+                     }
+
+
+                     var childNodes = document.getElementById('todobody').childNodes;
+
+                     for (var i = childNodes.length-1, cmp; i >= 0; i--) {
+                        childNodes[i].remove();
+                     }
+
+                     for(var i=0; i<data.length; i++)
+                     {
+                        var html = '<p class="showntodo"><input type="checkbox" class="marktodo" /> <span>'+data[i].val+'</span> <button class="removeTodo" tid="'+data[i].tid+'">x</button></p>';
+                        Ext.get('todobody').insertHtml("beforeEnd",html);
+                     }
+
+                     dom = Ext.dom.Query.select('.removeTodo');
+
+                     for(var i=0; i<dom.length; i++)
+                     {
+                        var el = Ext.get(dom[i]); 
+                        el.on('click', function(){
+                           var tid = el.dom.attributes.tid.nodeValue;
+                           panel.fireEvent('removeTodo',tid);
+                        });
+                     }
+
+
+
+
                      Ext.MessageBox.alert('Alert box', 'Todo removed');
                   }
+                  
                }
             });
             Ext.get('actionbutton').on('click', function(e){
@@ -94,6 +174,8 @@
                panel.fireEvent('addTodo');
 
             });
+
+            
                         
 
             
