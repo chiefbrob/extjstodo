@@ -56,6 +56,9 @@
             color: white;
             background-color: red;
          }
+         .completed {
+            text-decoration: line-through;
+         }
 
       </style>
 
@@ -95,26 +98,10 @@
                         Ext.MessageBox.alert('Invalid task', 'Specify a task name');
                         return;
                      }
-                     var shown = Ext.dom.Query.select('.removeTodo');
-                     shown = shown.length;
 
-                     var tid = makeTodoId();
-
-                     var html = '<p class="showntodo"><input type="checkbox" class="marktodo" /> <span>'+q+'</span> <button class="removeTodo" tid="'+tid+'">x</button></p>';
-                     Ext.get('todobody').insertHtml("beforeEnd",html);
-                     
+                     panel.fireEvent('createTodo',false,q);
                      document.getElementById('inputbar').value = "";
-
-                     var dom = Ext.dom.Query.select('.removeTodo');
-                     for(var i=shown; i<dom.length; i++)
-                     {
-                        var el = Ext.get(dom[i]); 
-                        el.on('click', function(){
-                           var tid = el.dom.attributes.tid.nodeValue;
-                           panel.fireEvent('removeTodo',tid);
-                        });
-                     }
-                     
+                     return true;
                      
                   },
                   removeTodo: function(e) {
@@ -125,7 +112,7 @@
                         var el = Ext.get(dom[i]);
 
                         var t = {
-                           state: false, 
+                           state: el.dom.childNodes[0].checked, 
                            val: el.dom.childNodes[2].firstChild.nodeValue,
                            tid: el.dom.childNodes[4].firstChild.parentNode.attributes[1].nodeValue
                         };
@@ -137,7 +124,6 @@
 
                      }
 
-
                      var childNodes = document.getElementById('todobody').childNodes;
 
                      for (var i = childNodes.length-1, cmp; i >= 0; i--) {
@@ -146,13 +132,66 @@
 
                      for(var i=0; i<data.length; i++)
                      {
-                        var html = '<p class="showntodo"><input type="checkbox" class="marktodo" /> <span>'+data[i].val+'</span> <button class="removeTodo" tid="'+data[i].tid+'">x</button></p>';
-                        Ext.get('todobody').insertHtml("beforeEnd",html);
+                        if(!data[i].state)
+                           panel.fireEvent('createTodo',false,data[i].val);
+                        else
+                           panel.fireEvent('createTodo',true,data[i].val);
                      }
 
-                     dom = Ext.dom.Query.select('.removeTodo');
+                     Ext.MessageBox.alert('Alert box', 'Todo removed');
 
+                     return;
+
+                     
+                  },
+
+                  toggleTodo: function(tid){
+                     var dom = Ext.dom.Query.select('.showntodo');
                      for(var i=0; i<dom.length; i++)
+                     {
+                        var el = Ext.get(dom[i]); 
+                        
+                        if(el.dom.attributes[1].nodeValue != tid)
+                        {
+                           continue;
+                        }
+                        
+
+                        if(el.dom.classList.length ==2)
+                        {
+                           el.removeCls('completed');
+                        }
+                        else
+                        {
+                           el.addCls('completed');
+                        }
+
+                        /*el.on('click', function(){
+                           var tid = el.dom.attributes.tid.nodeValue;
+                           panel.fireEvent('toggleTodo',tid);
+                        });*/
+                     }
+                  },
+
+                  createTodo: function(state,val){
+
+                     var tid = makeTodoId();
+
+                     var shown = Ext.dom.Query.select('.removeTodo').length;
+
+                     var todo;
+                     if(!state)
+                     {
+                        todo = '<p class="showntodo" tid="'+tid+'"><input type="checkbox" class="completedTodo" tid="'+tid+'" /> <span>'+val+'</span> <button class="removeTodo" tid="'+tid+'">x</button></p>';
+                     }
+                     else
+                     {
+                        todo = '<p class="showntodo completed" tid="'+tid+'"><input type="checkbox" checked="checked" class="completedTodo" tid="'+tid+'" /> <span>'+val+'</span> <button class="removeTodo" tid="'+tid+'">x</button></p>';
+                     }
+                     Ext.get('todobody').insertHtml("beforeEnd",todo);
+
+                     var dom = Ext.dom.Query.select('.removeTodo');
+                     for(var i=shown; i<dom.length; i++)
                      {
                         var el = Ext.get(dom[i]); 
                         el.on('click', function(){
@@ -161,14 +200,23 @@
                         });
                      }
 
+                     dom = Ext.dom.Query.select('.completedTodo');
+                     for(var i=shown; i<dom.length; i++)
+                     {
+                        var el = Ext.get(dom[i]); 
+                        el.on('click', function(){
+                           var tid = el.dom.attributes.tid.nodeValue;
+                           panel.fireEvent('toggleTodo',tid);
+                        });
+                     }
 
+                     return true;
 
-
-                     Ext.MessageBox.alert('Alert box', 'Todo removed');
                   }
                   
                }
             });
+
             Ext.get('actionbutton').on('click', function(e){
                
                panel.fireEvent('addTodo');
